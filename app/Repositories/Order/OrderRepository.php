@@ -12,16 +12,17 @@ class OrderRepository{
 
         $order = Order::create([
             'total_quantity' => request()->total_quantity,
-            // 'total_amount' => request()->total_amount,
-            // 'delivery_address' => request()->delivery_address,
-            // 'state_id' => request()->state_id,
-            // 'pickup_location_id' => request()->pickup_location_id,
+            'total_amount' => request()->total_amount,
+            'delivery_address' => request()->delivery_address,
+            'city' => request()->city,
+            'state' => request()->state,
+            'country' => request()->country,
             'user_id' => auth()->user()->id
         ]);
 
         foreach($user_carts as $user_cart){
                 $order->products()->attach($user_cart,[
-                    // 'amount' => request()->amount,
+                    'amount' => request()->amount,
                     'quantity' => $user_cart->quantity,
                     'order_id' => $order->id,
                     'product_id' => $user_cart->product_id

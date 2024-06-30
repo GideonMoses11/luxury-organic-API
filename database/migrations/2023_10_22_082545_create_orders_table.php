@@ -17,9 +17,10 @@ return new class extends Migration
             $table->integer('total_amount')->nullable();
             $table->enum('status',['pending', 'in-progress', 'completed', 'canceled', 'delivered'])->default('pending');
             $table->longText('delivery_address')->nullable();
-            $table->string('pickup_location_id')->index()->nullable();
-            $table->string('state_id')->index()->nullable();
-            $table->string('user_id')->index()->nullable();
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('country')->nullable();
+            $table->string('user_id')->nullable();
             $table->timestamps();
         });
     }
