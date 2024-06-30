@@ -39,7 +39,7 @@ class AdminProductRepository{
     // Validation
     request()->validate([
         'name' => 'required|string',
-        'photos.*' => 'required|mimes:jpeg,jpg,png,gif,svg',
+        'photos.*' => 'required|max:5000',
         'description' => 'nullable|string',
         'price' => 'nullable|integer',
         'quantity' => 'nullable|integer',
@@ -103,7 +103,7 @@ public function edit($id){
 
     request()->validate([
         'name' => 'nullable|string',
-        'photos.*' => 'nullable|mimes:jpeg,jpg,png,gif,svg|max:2048',
+        'photos.*' => 'nullable|max:5000',
         'description' => 'nullable|string',
         'price' => 'nullable|integer',
         'quantity' => 'nullable|integer',
