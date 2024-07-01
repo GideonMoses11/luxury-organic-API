@@ -35,67 +35,104 @@ class AdminProductRepository{
 
 
     public function create()
-{
-    // Validation
-    request()->validate([
-        'name' => 'required|string',
-        'photos.*' => 'required|max:5000',
-        'description' => 'nullable|string',
-        'price' => 'nullable|integer',
-        'quantity' => 'nullable|integer',
-        'tag_ids' => 'required|array',
-        'category_ids' => 'required|array',
-    ]);
+    {
+        // Validation
+        request()->validate([
+            'name' => 'required|string',
+            'photos*' => 'required|max:5000',
+            'description' => 'nullable|string',
+            'price' => 'nullable|integer',
+            'quantity' => 'nullable|integer',
+            'tag_ids' => 'required|array',
+            'category_ids' => 'required|array',
+        ]);
 
-    // Create a new product
-    $product = new Product([
-        'name' => request()->name,
-        'slug' => Str::slug(request()->name),
-        'description' => request()->description,
-        'price' => request()->price,
-        'quantity' => request()->quantity,
-    ]);
+        // Create a new product
+        $product = new Product([
+            'name' => request()->name,
+            'slug' => Str::slug(request()->name),
+            'description' => request()->description,
+            'price' => request()->price,
+            'quantity' => request()->quantity,
+        ]);
 
-    // Save the product within a database transaction
-    DB::transaction(function () use ($product) {
-        $product->save();
+        // Save the product within a database transaction
+        // DB::transaction(function () use ($product) {
+        //     $product->save();
 
-        // Handle image uploads
-        if (request()->hasFile('photos')) {
-            $images = [];
-            $baseUrl = config('do-spaces.url');
+        //     // Handle image uploads
+        //     if (request()->hasFile('photos')) {
 
-            foreach (request()->file('photos') as $file) {
-                $oldName = $file->getClientOriginalName();
-                $newFileName = time() . '_' . $oldName;
-                $file_path = Storage::disk('do_spaces')->putFileAs('products/photos', $file, $newFileName, 'public');
-                $fileUrl = $baseUrl . $file_path;
+        //         $images = [];
+        //         $baseUrl = config('do-spaces.url');
+        //         dd($baseUrl);
 
-                $images[] = new Image([
-                    'url' => $fileUrl,
-                    'old_name' => $oldName,
-                    'file_name' => $newFileName,
-                ]);
+        //         foreach (request()->file('photos') as $file) {
+        //             $oldName = $file->getClientOriginalName();
+        //             $newFileName = time() . '_' . $oldName;
+        //             $file_path = Storage::disk('do_spaces')->putFileAs('products/photos', $file, $newFileName, 'public');
+        //             $fileUrl = $baseUrl . $file_path;
+        //         dd($file_path);
+
+        //             $images[] = new Image([
+        //                 'url' => $fileUrl,
+        //                 'old_name' => $oldName,
+        //                 'file_name' => $newFileName,
+        //             ]);
+        //         }
+
+        //         // Save the images related to the product
+        //         $product->images()->saveMany($images);
+        //     }
+
+        //     // Attach categories
+        //     $product->categories()->attach(request()->category_ids);
+        //     $product->tags()->attach(request()->tag_ids);
+        // });
+
+        DB::transaction(function () use ($product) {
+            try {
+                $product->save();
+
+                // Handle image uploads
+                if (request()->hasFile('photos')) {
+                    $baseUrl = config('do-spaces.url');
+
+                    foreach (request()->file('photos') as $file) {
+                        $oldName = $file->getClientOriginalName();
+                        $newFileName = time() . '_' . $oldName;
+                        $file_path = Storage::disk('do_spaces')->putFileAs('products/photos', $file, $newFileName, 'public');
+                        $fileUrl = $baseUrl . '/' . $file_path;
+
+                        $image = Image::create([
+                            'url' => $fileUrl,
+                            'old_name' => $oldName,
+                            'file_name' => $newFileName,
+                            'product_id' => $product->id
+                        ]);
+                    }
+
+                }
+
+                // Attach categories
+                $product->categories()->attach(request()->category_ids);
+                $product->tags()->attach(request()->tag_ids);
+            } catch (\Exception $e) {
+                \Log::error('Error in transaction', ['message' => $e->getMessage()]);
+                // throw $e; // Re-throw to rollback the transaction
             }
+        });
 
-            // Save the images related to the product
-            $product->images()->saveMany($images);
-        }
 
-        // Attach categories
-        $product->categories()->attach(request()->category_ids);
-        $product->tags()->attach(request()->tag_ids);
-    });
+        $product = Product::with('images')->where('id', $product->id)->get();
 
-    $product = Product::with('images')->where('id', $product->id)->get();
-
-    return response()->json([
-        'message' => 'Product created successfully!',
-        'status' => 201,
-        'success' => true,
-        'product' => $product,
-    ]);
-}
+        return response()->json([
+            'message' => 'Product created successfully!',
+            'status' => 201,
+            'success' => true,
+            'product' => $product,
+        ]);
+    }
 
 public function edit($id){
 
@@ -103,7 +140,7 @@ public function edit($id){
 
     request()->validate([
         'name' => 'nullable|string',
-        'photos.*' => 'nullable|max:5000',
+        'photos*' => 'nullable|max:5000',
         'description' => 'nullable|string',
         'price' => 'nullable|integer',
         'quantity' => 'nullable|integer',
@@ -124,7 +161,6 @@ public function edit($id){
 
         // Handle image uploads
         if (request()->hasFile('photos')) {
-            $images = [];
             $baseUrl = config('do-spaces.url');
 
             foreach (request()->file('photos') as $file) {
@@ -133,15 +169,14 @@ public function edit($id){
                 $file_path = Storage::disk('do_spaces')->putFileAs('products/photos', $file, $newFileName, 'public');
                 $fileUrl = $baseUrl . $file_path;
 
-                $images[] = new Image([
+                $image = Image::create([
                     'url' => $fileUrl,
                     'old_name' => $oldName,
                     'file_name' => $newFileName,
+                    'product_id' => $product->id
                 ]);
             }
 
-            // Save the images related to the product
-            $product->images()->saveMany($images);
         }
 
         // Attach categories
