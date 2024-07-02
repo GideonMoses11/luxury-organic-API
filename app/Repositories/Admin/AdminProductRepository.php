@@ -180,8 +180,14 @@ public function edit($id){
         }
 
         // Attach categories
-        $product->categories()->attach(request()->category_ids);
-        $product->tags()->attach(request()->tag_ids);
+        // $product->categories()->attach(request()->category_ids);
+        // $product->tags()->attach(request()->tag_ids);
+        if (request()->has('category_ids')) {
+            $product->categories()->attach(request()->category_ids);
+        }
+        if (request()->has('tag_ids')) {
+            $product->tags()->attach(request()->tag_ids);
+        }
     });
 
     $product = Product::with('images')->where('id', $product->id)->get();
