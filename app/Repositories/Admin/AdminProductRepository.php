@@ -167,7 +167,7 @@ public function edit($id){
                 $oldName = $file->getClientOriginalName();
                 $newFileName = time() . '_' . $oldName;
                 $file_path = Storage::disk('do_spaces')->putFileAs('products/photos', $file, $newFileName, 'public');
-                $fileUrl = $baseUrl . $file_path;
+                $fileUrl = $baseUrl . '/' . $file_path;
 
                 $image = Image::create([
                     'url' => $fileUrl,

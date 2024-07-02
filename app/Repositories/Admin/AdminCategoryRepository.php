@@ -42,7 +42,7 @@ class AdminCategoryRepository{
             $cat_image = request()->file('icon_image');
             $file_name = $cat_image->getClientOriginalName();
             $cat_pic = Storage::disk('do_spaces')->putFileAs('category/icons',$cat_image,time().'_'. $file_name, 'public');
-            $fileUrl = $baseUrl . $cat_pic;
+            $fileUrl = $baseUrl . '/' . $cat_pic;
         }
 
         $category = Category::create([
@@ -137,7 +137,7 @@ class AdminCategoryRepository{
             $cat_image = request()->file('icon_image');
             $file_name = $cat_image->getClientOriginalName();
             $cat_pic = Storage::disk('do_spaces')->putFileAs('category/icons',$cat_image,time().'_'. $file_name, 'public');
-            $fileUrl = $baseUrl . $cat_pic;
+            $fileUrl = $baseUrl . '/' . $cat_pic;
         }
 
         $category->update([
