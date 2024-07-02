@@ -35,7 +35,7 @@ class Product extends Model
     protected $with = ['images', 'categories', 'tags'];
 
     public function images(){
-        return $this->hasMany(Image::class);
+        return $this->hasMany(Image::class)->orderBy('created_at', 'asc');;
     }
 
     public function categories(){
