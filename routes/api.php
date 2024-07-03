@@ -9,6 +9,7 @@ use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\State\StateController;
 use App\Http\Controllers\Rating\RatingController;
 use App\Http\Controllers\Review\ReviewController;
+use App\Http\Controllers\Stripe\StripeController;
 use App\Http\Controllers\Admin\AdminTagController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Payment\PaymentController;
@@ -124,6 +125,11 @@ Route::group(['prefix' => 'payment'], function () {
     Route::post('/make', [FlutterwaveController::class, 'initialize']);
     Route::get('/webhook', [FlutterwaveController::class, 'webhook']);
     Route::get('/callback/flutterwave', [FlutterwaveController::class, 'callback'])->name('callback');
+});
+
+Route::group(['prefix' => 'payment'], function () {
+    Route::post('/make', [StripeController::class, 'initialize']);
+    Route::get('/webhook', [StripeController::class, 'webhook']);
 });
 
 Route::group(['prefix' => 'admin', 'middleware' => ['admin']], function () {
